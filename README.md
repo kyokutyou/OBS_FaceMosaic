@@ -2,7 +2,7 @@
 
 Windows x64用のOBS Studio顔モザイクフィルター試作です。標準メディアソース（`ffmpeg_source`）の映像を顔検出し、検出したフレーム自身へモザイクを適用します。SRTの受信はOBSが担当します。
 
-対象は **OBS 32.2.2／30.2.3**（版ごとに別ビルド）。[プラグイン試作版0.1.0](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/v0.1.0)の使用するOBS版に合うZIPと、[共通モデルパック0.1.0](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.0)を取得してください。ソース内にモデル・DLLは含みません。
+対象は **OBS 32.2.2／30.2.3**（版ごとに別ビルド）。[プラグイン試作版0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/v0.1.1)の使用するOBS版に合うZIPと、[共通モデルパック0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.1)を取得してください。ソース内にモデル・DLLは含みません。
 
 ## 制限
 
@@ -75,8 +75,8 @@ python -m venv .deps/model-conversion
 ## OBSへの導入
 
 1. OBSを終了し、対象版の配布ZIP内`obs-plugins/64bit/`の`obs-face-mosaic.dll`、`onnxruntime.dll`、`DirectML.dll`をOBSの`obs-plugins/64bit/`へ配置します。自分でビルドした場合は`build/package/`（30.2.3用は`build-obs30/package/`）を使います。更新前は同名ファイルをバックアップしてください。
-2. 専用テストプロファイル・シーンコレクションで、メディアソースへ「自動顔モザイク (OBS_FaceMosaic)」を追加します。
-3. 「モデルフォルダー」、軽量モデル、DirectML GPUを指定します。読み込み中は黒画面です。
+2. モデルZIPを展開し、内側の`data`をOBSのインストール先（通常は`C:\Program Files\obs-studio`）へコピーします。別ドライブ・portable版ではそのOBSフォルダーを使います。
+3. 専用テストシーンのメディアソースへ「自動顔モザイク (OBS_FaceMosaic)」を追加し、軽量モデルとDirectML GPUを選びます。モデルフォルダーは`data/obs-plugins/obs-face-mosaic/models/`を自動で使います。任意の指定も可能で、既存指定は維持します。空欄に戻すと自動配置に戻ります。読み込み中は黒画面です。
 4. テスト映像を録画し、モザイク、停止・再開、黒画面への移行、音声同期を確認します。
 
 取り外す場合はOBS終了後にプラグインDLLを削除します。共有される可能性のあるORT・DirectML DLLは一律に削除しないでください。[OBS公式の導入説明](https://obsproject.com/kb/plugins-guide)も参照してください。

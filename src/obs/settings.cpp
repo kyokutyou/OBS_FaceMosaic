@@ -1,11 +1,29 @@
 #include "obs/settings.hpp"
 #include "inference/detector.hpp"
+#include <obs-module.h>
 
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <string_view>
 
 namespace obs_face_mosaic::obs_plugin {
+
+namespace {
+std::string default_model_directory() noexcept {
+  try {
+    const auto* data_path = obs_get_module_data_path(obs_current_module());
+    if (!data_path || !data_path[0]) return {};
+    // OBS supplies UTF-8 paths, including for portable/custom installations.
+    // Do not require the directory to exist before showing the default in UI.
+    const auto path = std::filesystem::absolute(
+        std::filesystem::u8path(data_path) / "models").lexically_normal().generic_u8string();
+    return {reinterpret_cast<const char*>(path.data()), path.size()};
+  } catch (...) {
+    return {};  // The loader keeps output black when the path cannot be resolved.
+  }
+}
+}  // namespace
 
 const char* model_filename(const Settings& settings) noexcept {
   if (settings.model == "n-fp16") return "face-mosaic-lite-fp16.onnx";
@@ -43,7 +61,8 @@ Settings read_settings(obs_data_t* data) {
 
 void filter_defaults(obs_data_t* settings) {
   obs_data_set_default_string(settings, "model", "n-fp16");
-  obs_data_set_default_string(settings, "model_directory", "");
+  const auto directory = default_model_directory();
+  obs_data_set_default_string(settings, "model_directory", directory.c_str());
   obs_data_set_default_bool(settings, "use_cpu", false);
   obs_data_set_default_string(settings, "gpu_adapter", "");
   obs_data_set_default_double(settings, "score_threshold", 0.25);
@@ -56,6 +75,10 @@ void filter_defaults(obs_data_t* settings) {
 }
 
 void migrate_settings(obs_data_t* settings) {
+  // Empty saved selections mean automatic placement. Keep the default-only
+  // value out of JSON so moving OBS does not retain an obsolete absolute path.
+  if (!obs_data_get_string(settings, "model_directory")[0])
+    obs_data_unset_user_value(settings, "model_directory");
   if (!obs_data_has_user_value(settings, "model")) {
     // OBS omits default-only values from saved JSON. Older schema versions
     // therefore need their old default pinned before applying today's default.

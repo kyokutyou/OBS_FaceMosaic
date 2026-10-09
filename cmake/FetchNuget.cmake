@@ -16,6 +16,7 @@ function(obsfm_resolve_nuget_package package_name package_version url sha256 out
   endif()
 
   file(SHA256 "${_archive}" _actual_sha256)
+  string(TOUPPER "${_actual_sha256}" _actual_sha256)
   if(NOT _actual_sha256 STREQUAL "${sha256}")
     message(FATAL_ERROR "SHA-256 mismatch for ${_archive}: expected ${sha256}, got ${_actual_sha256}")
   endif()
