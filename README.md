@@ -2,7 +2,7 @@
 
 Windows x64用のOBS Studio顔モザイクフィルター試作です。標準メディアソース（`ffmpeg_source`）の映像を顔検出し、検出したフレーム自身へモザイクを適用します。SRTの受信はOBSが担当します。
 
-対象は **OBS 32.2.2／30.2.3**（版ごとに別ビルド）。現在はソースのみで、モデル・DLL・配布ZIPは含みません。将来はGitHub ReleasesでOBS版別プラグインZIPと4モデルの共通ZIPを別配布し、対応モデル版・導入手順・ライセンス・出所・変換方法・SHA-256・対応ソースの案内を添付する予定です。配布条件の整理は未完了で、ZIPは未公開です。
+対象は **OBS 32.2.2／30.2.3**（版ごとに別ビルド）。ソース内にモデル・DLLは含みません。4モデルの[共通モデルパック0.1.0](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.0)をGitHub Releasesで別配布しています。プラグインDLLの配布は準備中です。
 
 ## 制限
 
@@ -52,7 +52,7 @@ cmake --install build --config Release --prefix build/package
 
 ## モデル
 
-原本は[FaceMosaic v1.1.1](https://github.com/Liala1/FaceMosaic/releases/tag/v1.1.1)の`yolov11n-face.onnx`／`yolov11m-face.onnx`です。AGPL-3.0の表示がありますが、学習由来・対応ソースの提供範囲は確認中で、現在は再配布していません。
+通常は[共通モデルパック0.1.0](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.0)を展開し、その`models`フォルダーを指定します。以下は変換を再現する場合の手順です。原本は[FaceMosaic v1.1.1](https://github.com/Liala1/FaceMosaic/releases/tag/v1.1.1)の`yolov11n-face.onnx`／`yolov11m-face.onnx`です。AGPL-3.0の表示がありますが、学習由来・対応ソースの提供範囲は確認中です。
 
 Python 3.12で[変換スクリプト](tools/convert-models.py)と[固定依存一覧](tools/requirements.txt)を使います。原本を上書きせず、入力パスを変更し、出力先には未作成のフォルダーを指定してください。
 
