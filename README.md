@@ -4,11 +4,41 @@ Windows x64用のOBS Studio用の顔モザイクフィルターです。標準�
 
 対象は **OBS 32.2.2／30.2.3**（版ごとに別ビルド）。[プラグイン試作版0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/v0.1.1)の使用するOBS版に合うZIPと、[共通モデルパック0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.1)を取得してください。ソース内にモデル・DLLは含みません。
 
+## 画像付き導入ガイド
+
+**[OBSで使う手順を画像で確認する](docs/usage.md)**
+
+ダウンロード、フォルダーへのコピー、フィルター追加、モデル・GPU設定、録画による動作確認、音声同期を順に説明します。困った時の確認方法もまとめています。
+
+## ダウンロード
+
+| 必要なもの | 配布ページとファイル |
+| --- | --- |
+| OBS 32.2.2用プラグイン | [プラグイン0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/v0.1.1)の `OBS-FaceMosaic-0.1.1-OBS32.2.2-Windows-x64.zip` |
+| OBS 30.2.3用プラグイン | 同じ配布ページの `OBS-FaceMosaic-0.1.1-OBS30.2.3-Windows-x64.zip` |
+| 両版共通のモデル | [共通モデルパック0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.1)の `OBS-FaceMosaic-Models-0.1.1.zip` |
+
+使用するOBS版のプラグインZIPを一つと、共通モデルZIPを取得してください。配布済みプラグインを使う場合はビルド不要です。
+
+## OBSへの導入
+
+1. OBSを終了し、対象版の配布ZIP内`obs-plugins/64bit/`の`obs-face-mosaic.dll`、`onnxruntime.dll`、`DirectML.dll`をOBSの`obs-plugins/64bit/`へ配置します。自分でビルドした場合は`build/package/`（30.2.3用は`build-obs30/package/`）を使います。更新前は同名ファイルをバックアップしてください。
+2. モデルZIPを展開し、内側の`data`をOBSのインストール先（通常は`C:\Program Files\obs-studio`）へコピーします。別ドライブではそのOBSフォルダーを使います。
+3. 専用テストシーンのメディアソースへ「自動顔モザイク (OBS_FaceMosaic)」を追加し、軽量モデルとDirectML GPUを選びます。モデルフォルダーは`data/obs-plugins/obs-face-mosaic/models/`を自動で使います。任意の指定も可能です。
+4. テスト映像を録画し、モザイク、停止・再開、黒画面への移行、音声同期を確認します。
+
+アンインストールはOBS終了後にプラグインDLLを削除します。共有される可能性のあるORT・DirectML DLLは一律に削除しないでください。[OBS公式の導入説明](https://obsproject.com/kb/plugins-guide)も参照してください。
+
 ## 制限
 
 - 検出漏れや遮蔽不足があり、すべての顔の秘匿を保証しません。
 - モデル未準備・処理障害時は黒画面またはフレーム破棄へ移ります。
 - 音声は加工しません。録画でずれを測定し、OBSの同期オフセットを調整してください。
+
+## 開発者向けの手順
+
+<details>
+<summary>ビルドとモデル変換の手順を開く</summary>
 
 ## ビルド
 
@@ -50,7 +80,7 @@ cmake --install build --config Release --prefix build/package
 
 ## モデル
 
-通常は[共通モデルパック0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.1)を展開し、その`models`フォルダーを指定します。以下は変換を再現する場合の手順です。原本は[FaceMosaic v1.1.1](https://github.com/Liala1/FaceMosaic/releases/tag/v1.1.1)の`yolov11n-face.onnx`／`yolov11m-face.onnx`です。
+通常は[共通モデルパック0.1.1](https://github.com/kyokutyou/OBS_FaceMosaic/releases/tag/models-v0.1.1)を展開し、内側の`data`をOBSのインストール先へコピーします。モデルフォルダーは自動で使われ、任意指定も可能です。以下は変換を再現する場合の手順です。原本は[FaceMosaic v1.1.1](https://github.com/Liala1/FaceMosaic/releases/tag/v1.1.1)の`yolov11n-face.onnx`／`yolov11m-face.onnx`です。
 
 Python 3.12で[変換スクリプト](tools/convert-models.py)と[固定依存一覧](tools/requirements.txt)を使います。原本を上書きせず、入力パスを変更し、出力先には未作成のフォルダーを指定してください。
 
@@ -70,14 +100,7 @@ python -m venv .deps/model-conversion
 | `face-mosaic-lite-fp32.onnx` | `A4DFFE5F031E476186E3EAB59BB0BC1201364DA02FD505A2949C79FD278E30E2` |
 | `face-mosaic-detail-fp32.onnx` | `325F267E8F24C22D67179A77AFE8B93D179098E787112F64E4784A4A0AD5D7EB` |
 
-## OBSへの導入
-
-1. OBSを終了し、対象版の配布ZIP内`obs-plugins/64bit/`の`obs-face-mosaic.dll`、`onnxruntime.dll`、`DirectML.dll`をOBSの`obs-plugins/64bit/`へ配置します。自分でビルドした場合は`build/package/`（30.2.3用は`build-obs30/package/`）を使います。更新前は同名ファイルをバックアップしてください。
-2. モデルZIPを展開し、内側の`data`をOBSのインストール先（通常は`C:\Program Files\obs-studio`）へコピーします。別ドライブではそのOBSフォルダーを使います。
-3. 専用テストシーンのメディアソースへ「自動顔モザイク (OBS_FaceMosaic)」を追加し、軽量モデルとDirectML GPUを選びます。モデルフォルダーは`data/obs-plugins/obs-face-mosaic/models/`を自動で使います。任意の指定も可能です。
-4. テスト映像を録画し、モザイク、停止・再開、黒画面への移行、音声同期を確認します。
-
-アンインストールはOBS終了後にプラグインDLLを削除します。共有される可能性のあるORT・DirectML DLLは一律に削除しないでください。[OBS公式の導入説明](https://obsproject.com/kb/plugins-guide)も参照してください。
+</details>
 
 ## ライセンス
 
